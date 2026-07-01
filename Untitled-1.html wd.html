@@ -1,0 +1,344 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Developer Portfolio Generator</title>
+
+<script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+
+<style>
+*{
+margin:0;
+padding:0;
+box-sizing:border-box;
+font-family:Arial,sans-serif;
+}
+
+body{
+background:#f5f5f5;
+padding:20px;
+}
+
+header{
+display:flex;
+justify-content:space-between;
+align-items:center;
+margin-bottom:20px;
+}
+
+.container{
+display:grid;
+grid-template-columns:1fr 1fr;
+gap:20px;
+}
+
+textarea{
+width:100%;
+height:600px;
+padding:15px;
+border:1px solid #ccc;
+border-radius:8px;
+font-size:16px;
+resize:none;
+}
+
+.preview{
+min-height:600px;
+padding:20px;
+border-radius:10px;
+border:1px solid #ddd;
+overflow:auto;
+background:white;
+}
+
+.controls{
+display:flex;
+flex-wrap:wrap;
+gap:10px;
+margin-bottom:20px;
+}
+
+button{
+padding:10px 15px;
+border:none;
+border-radius:6px;
+cursor:pointer;
+}
+
+.theme-btn{
+background:#007bff;
+color:white;
+}
+
+.download-btn{
+background:#28a745;
+color:white;
+}
+
+.template-btn{
+background:#6c757d;
+color:white;
+}
+
+.dark{
+background:#1f2937;
+color:white;
+}
+
+.dark .preview{
+background:#111827;
+color:white;
+border:1px solid #374151;
+}
+
+.modern{
+background:#e0f2fe;
+}
+
+.modern .preview{
+background:white;
+}
+
+@media(max-width:900px){
+.container{
+grid-template-columns:1fr;
+}
+}
+</style>
+</head>
+
+<body>
+
+<header>
+<h1>Developer Portfolio Generator</h1>
+</header>
+
+<div class="controls">
+
+<input type="file" id="fileInput" accept=".md">
+
+<button class="theme-btn" onclick="setTheme('minimal')">
+Minimal
+</button>
+
+<button class="theme-btn" onclick="setTheme('modern')">
+Modern
+</button>
+
+<button class="theme-btn" onclick="setTheme('dark')">
+Dark
+</button>
+
+<button class="template-btn" onclick="loadTemplate('developer')">
+Developer Template
+</button>
+
+<button class="template-btn" onclick="loadTemplate('student')">
+Student Template
+</button>
+
+<button class="template-btn" onclick="loadTemplate('creative')">
+Creative Template
+</button>
+
+<button class="download-btn" onclick="downloadPortfolio()">
+Download Portfolio
+</button>
+
+</div>
+
+<div class="container">
+
+<div>
+<h2>Markdown Editor</h2>
+<textarea id="editor"></textarea>
+</div>
+
+<div>
+<h2>Live Preview</h2>
+<div class="preview" id="preview"></div>
+</div>
+
+</div>
+
+<script>
+
+const editor = document.getElementById("editor");
+const preview = document.getElementById("preview");
+
+const templates = {
+
+developer: `# John Doe
+
+## Full Stack Developer
+
+### About
+Experienced developer specializing in React and Next.js.
+
+### Skills
+- React
+- Next.js
+- TypeScript
+- Tailwind CSS
+
+### Projects
+- Portfolio Generator
+- Task Manager
+
+### Contact
+john@example.com
+`,
+
+student: `# Jaswanth
+
+## ECE Student
+
+### About
+Interested in Web Development, DSA and Embedded Systems.
+
+### Skills
+- C
+- Python
+- React
+
+### Projects
+- Library Management System
+- Course Task Manager
+
+### Contact
+jaswanth@example.com
+`,
+
+creative: `# Creative Designer
+
+## UI/UX Designer
+
+### About
+Passionate about creating beautiful digital experiences.
+
+### Skills
+- Figma
+- Adobe XD
+- Photoshop
+
+### Projects
+- Brand Design
+- Portfolio Website
+
+### Contact
+designer@example.com
+`
+};
+
+function renderMarkdown() {
+preview.innerHTML = marked.parse(editor.value);
+localStorage.setItem("portfolioMarkdown", editor.value);
+}
+
+editor.addEventListener("input", renderMarkdown);
+
+const saved =
+localStorage.getItem("portfolioMarkdown");
+
+if(saved){
+editor.value = saved;
+}
+else{
+editor.value = templates.student;
+}
+
+renderMarkdown();
+
+function loadTemplate(type){
+editor.value = templates[type];
+renderMarkdown();
+}
+
+function setTheme(theme){
+
+document.body.classList.remove(
+"minimal",
+"modern",
+"dark"
+);
+
+if(theme !== "minimal"){
+document.body.classList.add(theme);
+}
+
+localStorage.setItem("theme", theme);
+}
+
+const savedTheme =
+localStorage.getItem("theme");
+
+if(savedTheme){
+setTheme(savedTheme);
+}
+
+document
+.getElementById("fileInput")
+.addEventListener("change", function(e){
+
+const file = e.target.files[0];
+
+if(!file) return;
+
+const reader = new FileReader();
+
+reader.onload = function(event){
+editor.value = event.target.result;
+renderMarkdown();
+};
+
+reader.readAsText(file);
+});
+
+function downloadPortfolio(){
+
+const html = `
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Portfolio</title>
+
+<style>
+body{
+font-family:Arial,sans-serif;
+max-width:900px;
+margin:auto;
+padding:40px;
+line-height:1.8;
+}
+</style>
+
+</head>
+
+<body>
+${marked.parse(editor.value)}
+</body>
+
+</html>
+`;
+
+const blob =
+new Blob([html], {type:"text/html"});
+
+const url =
+URL.createObjectURL(blob);
+
+const a =
+document.createElement("a");
+
+a.href = url;
+a.download = "portfolio.html";
+a.click();
+
+URL.revokeObjectURL(url);
+}
+</script>
+
+</body>
+</html>
